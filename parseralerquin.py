@@ -650,40 +650,46 @@ expr = """
 """
 
 
-def eval(ast):
-    head, *tail = ast
-    string = ''
-    # if head is 'text':
+def extract_head_type(head):
     if head is 'section':
-        return tail[0] + '\n'
+        return 'section'
     elif head is 'subsection':
-        return tail[0] + '\n'
+        return 'subsection'
     elif head is 'open_data':
         return 'open_data'
     elif head is 'close_data':
         return 'close_data'
     elif head is 'text':
-        return tail[0] + ' '
+        return 'text'
     elif head is 'comment':
         return 'comment'
-    elif head is 'attr'or head is 'open_string' or head is 'close_string':
-        return tail[0]
+    elif head is 'attr':
+        return 'attr'
+    elif head is 'open_string':
+        return 'open_string'
+    elif head is 'close_string':
+        return 'close_string'
     else:
-        if head:
-            test = eval(head)
-            if test is 'comment':
-                print('#'+extract_comment(tail))
-            if test is 'open_data':
-                print(extract_data(tail))
-            string += test
-        if tail:
-            string += eval(tail)
-
-    return string
+        return None
 
 
-def extract_comment(comment):
-    head, *tail = comment
+def eval(ast):
+    head, *tail = ast
+    string = ''
+    if head:
+        type_node = extract_head_type(head)
+        if type_node:
+            return type_node
+        elif not type_node:
+            type_node = eval(head)
+            if type_node == 'comment':
+                print(extract_comment(tail))
+    if tail:
+        eval(tail)
+
+
+def extract_comment(data):
+    head, *tail = data
     string = ''
     if head is 'text':
         return tail[0] + ' '
@@ -701,6 +707,22 @@ def extract_data(data):
     head, *tail = data
     string = ''
     if head is 'text' or head is 'open_string' or head is 'close_string':
+        return tail[0] + ' '
+    elif head is 'close_data':
+        string += '\n'
+    else:
+        if head:
+            string += extract_data(head)
+        if tail:
+            string += extract_data(tail)
+
+    return string
+
+
+def extract_section(data):
+    head, *tail = data
+    string = ''
+    if head is 'section' or head is 'open_string' or head is 'close_string':
         return tail[0] + ' '
     elif head is 'close_data':
         string += '\n'
