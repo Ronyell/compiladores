@@ -17,7 +17,8 @@ tokens_list = ['SECTION_TITLE',
                'COMMENT',
                'STRING',
                'EQUAL']
-
+# OrderedDict from collections -> Utilizar no dicionario
+# Header
 
 def lexer(source):
     return [tk for tk in raw_lexer(source) if tk.type != 'COMMENT']
@@ -64,6 +65,7 @@ parser = ox.make_parser([
     ('attribute : STRING EQUAL DATA', attribute_data),
     ('attribute : STRING EQUAL STRING', attribute_data),
 ], tokens_list)
+
 
 data = Data()
 expr = data.return_data()
